@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (ctx) => AppData(),
       child: MaterialApp(
-        debugShowCheckedModeBanner: false,
+        // debugShowCheckedModeBanner: false,
         theme: ThemeData(
           fontFamily: 'Brand-Regular',
           primarySwatch: Colors.green,
