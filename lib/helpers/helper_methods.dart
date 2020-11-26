@@ -1,8 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:g_taxi/global_variables.dart';
 import 'package:g_taxi/models/address.dart';
 import 'package:g_taxi/models/direction_details.dart';
+import 'package:g_taxi/models/user_model.dart';
 import 'package:g_taxi/provider/app_data.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -105,8 +108,9 @@ class FunctionsHelper {
       Address pickupAddress = Address(
         latitude: position.latitude,
         longitude: position.longitude,
-        placeFormattedAddress: address,
+        formattedAddress: address,
       );
+      formattedLocation = pickupAddress.formattedAddress;
       Provider.of<AppData>(context, listen: false).setPickupAddress(pickupAddress);
     }
     return address;
@@ -134,26 +138,33 @@ class FunctionsHelper {
 
 // ==================================================================
 // ==================================================================
+  static int calculateTripCost(DirectionDetails details) {
+    // trip base   : EGP 5
+    // every km    : $ 2
+    // every minute : $ 1
 
-  // static Future<void> getDirection(BuildContext context) async {
-  //   var pickup = Provider.of<AppData>(context, listen: false).pickupAddress;
-  //   var destination = Provider.of<AppData>(context, listen: false).destinationAddress;
+    int totalCost = 5 + (details.distanceValue / 1000 * 2).toInt() + (details.durationValue / 60 * 1).toInt();
+    return totalCost;
+  }
+// ==================================================================
+// ==================================================================
 
-  //   var pickLatLng = LatLng(pickup.latitude, pickup.longitude);
-  //   var destinationLatLng = LatLng(destination.latitude, destination.longitude);
+  static void getCurrentUser() {
+    User user = FirebaseAuth.instance.currentUser;
+    DatabaseReference userRef = FirebaseDatabase.instance.reference().child('riders/${user.uid}');
+    userRef.once().then((DataSnapshot snapshot) {
+      if (snapshot.value != null) {
+        currentUserInfo = UserModel.fromSnapshot(snapshot);
+        print(currentUserInfo.id);
+        print(currentUserInfo.name);
+        print(currentUserInfo.email);
+        print(currentUserInfo.phone);
+      }
+    });
+  }
 
-  //   var destinationDetails = await FunctionsHelper.getDirectionDetails(pickLatLng, destinationLatLng);
-  //   print(destinationDetails.encodedPoints);
-
-  //   PolylinePoints polylinePoints = PolylinePoints();
-  //   List<PointLatLng> results = PolylinePoints().decodePolyline(destinationDetails.encodedPoints);
-  //   if(results.isNotEmpty){
-  //     results.forEach((PointLatLng point) {
-  //       pol
-  //     });
-  //   }
-
-  // }
+// ==================================================================
+// ==================================================================
 
 // ==================================================================
 // ==================================================================

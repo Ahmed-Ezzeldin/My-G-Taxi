@@ -3,6 +3,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:g_taxi/helpers/helper_methods.dart';
+import 'package:g_taxi/screens/loading_screen.dart';
 import 'package:g_taxi/style/my_colors.dart';
 import 'package:g_taxi/style/text_style.dart';
 import 'package:g_taxi/widgets/driver_button.dart';
@@ -158,17 +159,19 @@ class _AuthScreenState extends State<AuthScreen> {
       if (isSignin) {
         await _auth.signInWithEmailAndPassword(
             email: emailController.text, password: passwordController.text);
+        Navigator.of(context).pushReplacementNamed(LoadingScreen.routeName);
       } else {
         await _auth.createUserWithEmailAndPassword(
             email: emailController.text, password: passwordController.text);
         final user = _auth.currentUser;
-        final userRef = FirebaseDatabase.instance.reference().child('${userType}s').child(user.uid);
+        final userRef = FirebaseDatabase.instance.reference().child('users').child(user.uid);
         if (isRider) {
           await userRef.set({
             'id': user.uid,
             'name': nameController.text,
             'phoneNumber': phoneController.text,
             'email': emailController.text,
+            'userType': userType,
           });
         } else {
           await userRef.set({
@@ -176,12 +179,14 @@ class _AuthScreenState extends State<AuthScreen> {
             'name': nameController.text,
             'phoneNumber': phoneController.text,
             'email': emailController.text,
+            'userType': userType,
             'carBrand': carBrandController.text,
             'carModel': carModelController.text,
             'carNumber': carNumberController.text,
             'carColor': carColorController.text,
           });
         }
+        Navigator.of(context).pushReplacementNamed(LoadingScreen.routeName);
       }
     } catch (error) {
       isLoading = false;
@@ -239,13 +244,14 @@ class _AuthScreenState extends State<AuthScreen> {
             ? Align(child: Container(height: 50, width: 50, child: CircularProgressIndicator()))
             : SignButton(title: 'Sign in', function: submitFun),
         SizedBox(height: 30),
-        FlatButton(
-          child: Text('Don\'t have an account, singn up here'),
-          onPressed: () {
-            isSignin = false;
-            setState(() {});
-          },
-        ),
+        if (!isLoading)
+          FlatButton(
+            child: Text('Don\'t have an account, singn up here'),
+            onPressed: () {
+              isSignin = false;
+              setState(() {});
+            },
+          ),
       ],
     );
   }
@@ -339,13 +345,14 @@ class _AuthScreenState extends State<AuthScreen> {
             ? Align(child: Container(height: 50, width: 50, child: CircularProgressIndicator()))
             : SignButton(title: 'Sign up', function: submitFun),
         SizedBox(height: 30),
-        FlatButton(
-          child: Text('Already have account? Log in'),
-          onPressed: () {
-            isSignin = true;
-            setState(() {});
-          },
-        ),
+        if (!isLoading)
+          FlatButton(
+            child: Text('Already have account? Log in'),
+            onPressed: () {
+              isSignin = true;
+              setState(() {});
+            },
+          ),
       ],
     );
   }

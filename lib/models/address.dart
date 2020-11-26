@@ -3,13 +3,13 @@ class Address {
   double longitude;
   String placeName;
   String placeId;
-  String placeFormattedAddress;
+  String formattedAddress;
 
   Address({
     this.latitude,
     this.longitude,
     this.placeName,
     this.placeId,
-    this.placeFormattedAddress,
+    this.formattedAddress,
   });
 }

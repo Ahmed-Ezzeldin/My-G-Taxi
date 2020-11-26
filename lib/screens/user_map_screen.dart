@@ -1,14 +1,17 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:g_taxi/global_variables.dart';
 import 'package:g_taxi/helpers/helper_methods.dart';
+import 'package:g_taxi/models/direction_details.dart';
 import 'package:g_taxi/provider/app_data.dart';
 import 'package:g_taxi/screens/search_destination_screen.dart';
 import 'package:g_taxi/style/my_colors.dart';
 import 'package:g_taxi/widgets/build_bottom_sheet_container.dart';
 import 'package:g_taxi/widgets/build_drawer.dart';
-import 'package:g_taxi/widgets/drawer_button.dart';
+import 'package:g_taxi/widgets/sign_button.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
@@ -23,11 +26,18 @@ class UserMapScreen extends StatefulWidget {
 class _UserMapScreenState extends State<UserMapScreen> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   final double bottomPadding = 280;
+  double searchPanelHeight = 280;
+  double detailPanelHeight = 0;
+  double requestPanelHeight = 0;
   final User user = FirebaseAuth.instance.currentUser;
+  bool isHasData = false;
+  DirectionDetails directionDetails;
+  String destinationPlace = '';
+  DatabaseReference rideRef;
 
   Completer<GoogleMapController> _completer = Completer();
   GoogleMapController mapController;
-  CameraPosition cameraPosition = CameraPosition(target: LatLng(30.0444, 31.2357), tilt: 10, zoom: 10);
+
   Position position;
   List<LatLng> polylineCoordinates = [];
   Set<Polyline> _polyline = {};
@@ -42,8 +52,10 @@ class _UserMapScreenState extends State<UserMapScreen> {
     var destinationLatLng = LatLng(destination.latitude, destination.longitude);
 
     var destinationDetails = await FunctionsHelper.getDirectionDetails(pickLatLng, destinationLatLng);
+    setState(() {
+      directionDetails = destinationDetails;
+    });
     print(destinationDetails.encodedPoints);
-    print('${destinationDetails.distanceValue}');
 
     PolylinePoints polylinePoints = PolylinePoints();
     List<PointLatLng> results = polylinePoints.decodePolyline(destinationDetails.encodedPoints);
@@ -58,7 +70,8 @@ class _UserMapScreenState extends State<UserMapScreen> {
     setState(() {
       Polyline polyline = Polyline(
         polylineId: PolylineId('polyId'),
-        color: Color.fromARGB(255, 95, 109, 237),
+        // color: Color.fromARGB(255, 95, 109, 237),
+        color: Colors.blue,
         points: polylineCoordinates,
         jointType: JointType.round,
         width: 4,
@@ -84,12 +97,12 @@ class _UserMapScreenState extends State<UserMapScreen> {
       bounds = LatLngBounds(southwest: pickLatLng, northeast: destinationLatLng);
     }
     mapController.animateCamera(CameraUpdate.newLatLngBounds(bounds, 70));
-    Marker pickupMarker = Marker(
-      markerId: MarkerId('pickup'),
-      position: pickLatLng,
-      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-      infoWindow: InfoWindow(title: pickup.placeName, snippet: 'My Location'),
-    );
+    // Marker pickupMarker = Marker(
+    //   markerId: MarkerId('pickup'),
+    //   position: pickLatLng,
+    //   icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+    //   infoWindow: InfoWindow(title: pickup.placeName, snippet: 'My Location'),
+    // );
     Marker destinationMarker = Marker(
       markerId: MarkerId('destination'),
       position: destinationLatLng,
@@ -114,11 +127,44 @@ class _UserMapScreenState extends State<UserMapScreen> {
       fillColor: Colors.purple,
     );
     setState(() {
-      _markers.add(pickupMarker);
+      // _markers.add(pickupMarker);
       _markers.add(destinationMarker);
       _circles.add(pickupCircle);
       _circles.add(destinationCircle);
+      destinationPlace = destination.placeName;
+      isHasData = true;
     });
+  }
+
+  void showDetailsSheet() async {
+    await getDirection();
+    setState(() {
+      searchPanelHeight = 0;
+      detailPanelHeight = 280;
+    });
+  }
+
+  void showRequestingSheet() {
+    setState(() {
+      searchPanelHeight = 0;
+      detailPanelHeight = 0;
+      requestPanelHeight = 280;
+      isHasData = false;
+    });
+    createRideRequest();
+  }
+
+  void resetFun() {
+    setState(() {
+      polylineCoordinates.clear();
+      _markers.clear();
+      _circles.clear();
+      searchPanelHeight = 280;
+      detailPanelHeight = 0;
+      requestPanelHeight = 0;
+      isHasData = false;
+    });
+    setupPositionLocator();
   }
 
   void setupPositionLocator() async {
@@ -127,6 +173,33 @@ class _UserMapScreenState extends State<UserMapScreen> {
     cameraPosition = CameraPosition(target: pos, zoom: 14);
     mapController.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
     await FunctionsHelper.findCordinateAddress(context, position);
+  }
+
+  void createRideRequest() async {
+    rideRef = FirebaseDatabase.instance.reference().child('rideRequest').push();
+    var pickup = Provider.of<AppData>(context, listen: false).pickupAddress;
+    var destination = Provider.of<AppData>(context, listen: false).destinationAddress;
+    await rideRef.set({
+      'created_at': DateTime.now().toString(),
+      'rider_name': currentUserInfo.name,
+      'rider_phone': currentUserInfo.phone,
+      'pickup_address': pickup.placeName,
+      'destination_address': destination.placeName,
+      'location': {'latitude': pickup.latitude, 'longitude': pickup.longitude},
+      'destination': {'latitude': destination.latitude, 'longitude': destination.longitude},
+      'payment_method': 'card',
+      'driver_id': 'waiting',
+    });
+  }
+
+  void cancelRequest() {
+    rideRef.remove();
+  }
+
+  @override
+  void initState() {
+    FunctionsHelper.getCurrentUser();
+    super.initState();
   }
 
   @override
@@ -153,10 +226,38 @@ class _UserMapScreenState extends State<UserMapScreen> {
               },
             ),
             // ===============================================================
+            // =============================================================== Drawer Button
+            Positioned(
+              left: 5,
+              top: 50,
+              child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(25),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 5,
+                        spreadRadius: 0.5,
+                        offset: Offset(0.7, 0.7),
+                      )
+                    ],
+                  ),
+                  child: IconButton(
+                      icon: Icon(isHasData ? Icons.arrow_back : Icons.menu),
+                      onPressed: () {
+                        if (isHasData) {
+                          resetFun();
+                        } else {
+                          _scaffoldKey.currentState.openDrawer();
+                        }
+                      })),
+            ),
             // ===============================================================
-            DrawerButton(scaffoldKey: _scaffoldKey),
-            BuildBottomSheetContainer(
-              bottomPadding,
+            // =============================================================== Search Panel
+
+            BuildPanelContainer(
+              searchPanelHeight,
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -179,7 +280,7 @@ class _UserMapScreenState extends State<UserMapScreen> {
                         final result =
                             await Navigator.of(context).pushNamed(SearchDestinationScreen.routeName);
                         if (result == 'getDirection') {
-                          await getDirection();
+                          showDetailsSheet();
                         }
                       },
                     ),
@@ -193,6 +294,99 @@ class _UserMapScreenState extends State<UserMapScreen> {
                     leading: Icon(Icons.work_outline),
                     title: Text('Home'),
                     subtitle: Text('6th of October city - Giza Governate'),
+                  ),
+                ],
+              ),
+            ),
+
+            // ===============================================================
+            // =============================================================== Details Panel
+
+            BuildPanelContainer(
+              detailPanelHeight,
+              Padding(
+                padding: const EdgeInsets.only(bottom: 15),
+                child: Column(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Image.asset('assets/images/taxi.png', height: 80, width: 80),
+                      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        if (directionDetails != null)
+                          Text('${(directionDetails.distanceValue / 1000).toStringAsFixed(1)}  km'),
+                        SizedBox(height: 10),
+                        if (directionDetails != null) Text('${directionDetails.durationValue ~/ 60}  minute'),
+                      ]),
+                      SizedBox(),
+                      SizedBox(),
+                      Text(
+                          directionDetails != null
+                              ? '${FunctionsHelper.calculateTripCost(directionDetails)} EGP'
+                              : 'No data',
+                          style: TextStyle(fontSize: 18, fontFamily: 'Brand-Bold')),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Image.asset('assets/images/redmarker.png', height: 25, width: 25),
+                      SizedBox(width: 20),
+                      Text(destinationPlace),
+                    ],
+                  ),
+                  Row(children: [
+                    Icon(Icons.money, size: 28),
+                    SizedBox(width: 10),
+                    Text('Cash'),
+                  ]),
+                  SizedBox(height: 20),
+                  SignButton(title: 'Request Taxi', function: showRequestingSheet),
+                ]),
+              ),
+            ),
+
+            // ===============================================================
+            // =============================================================== Request Panel
+
+            BuildPanelContainer(
+              requestPanelHeight,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Container(height: 40, width: 40, child: CircularProgressIndicator()),
+                      Text(
+                        'Requsting a Ride...',
+                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, fontFamily: 'Brand-Bold'),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 20),
+                  GestureDetector(
+                    onTap: () {
+                      cancelRequest();
+                      resetFun();
+                    },
+                    child: Container(
+                      height: 50,
+                      width: 50,
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(25),
+                          border: Border.all(width: 1, color: MyColors.lightGrayFair)),
+                      child: Icon(Icons.close, size: 25),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Container(
+                    width: double.infinity,
+                    child: Text(
+                      'Cancel Request',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 12),
+                    ),
                   ),
                 ],
               ),

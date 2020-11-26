@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:g_taxi/screens/auth_screen.dart';
 
 class BuildDrawer extends StatelessWidget {
   const BuildDrawer({
@@ -59,9 +60,9 @@ class BuildDrawer extends StatelessWidget {
             title: Text(
               'Logout',
             ),
-            onTap: () {
-              final auth = FirebaseAuth.instance;
-              auth.signOut();
+            onTap: () async {
+              await FirebaseAuth.instance.signOut();
+              Navigator.of(context).pushReplacementNamed(AuthScreen.routeName);
             },
           ),
         ],

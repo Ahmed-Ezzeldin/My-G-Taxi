@@ -11,6 +11,7 @@ class SignButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 50,
+      width: double.infinity,
       child: RaisedButton(
         color: MyColors.green,
         child: Text(
