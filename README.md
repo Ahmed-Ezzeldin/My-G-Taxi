@@ -17,11 +17,11 @@ samples, guidance on mobile development, and a full API reference.
 
 <div class="row">
 <img src="screenshots/Screenshot_1606317956.png" width="200" height="400">
-<img src="screenshot_2.png" width="200" height="400">
-<img src="screenshot_3.png" width="200" height="400">
-<img src="screenshot_4.png" width="200" height="400">
-<img src="screenshot_5.png" width="200" height="400">
-<img src="screenshot_6.png" width="200" height="400">
-<img src="screenshot_7.png" width="200" height="400">
-<img src="screenshot_8.png" width="200" height="400">
+<img src="screenshots/Screenshot_1606317975.png" width="200" height="400">
+<img src="screenshots/Screenshot_1606317986.png" width="200" height="400">
+<img src="screenshots/Screenshot_1606317994.png" width="200" height="400">
+<img src="screenshots/Screenshot_1606317995.png" width="200" height="400">
+<img src="screenshots/Screenshot_1606317996.png" width="200" height="400">
+<img src="screenshots/Screenshot_1606318121.png" width="200" height="400">
+<img src="screenshots/Screenshot_1606318128.png" width="200" height="400">
 <div>
