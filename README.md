@@ -1,9 +1,12 @@
 # My Green Taxi
 
-A new Flutter project.
+Flutter Taxi App (for passenger and driver ) communicates with the Google Maps API Directions Service which receives direction requests and returns an efficient path. The application works on Android  iOS.
 
-
-This project is a starting point for a Flutter application.
+- Show current location on map.
+- Get polyline path between location and destination on the map.
+- Search destination place by name (place ID).
+- Calculate distance, cost, time of the trip.
+- Responsive Design.
 
 
 
