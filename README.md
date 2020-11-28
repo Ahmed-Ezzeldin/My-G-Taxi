@@ -1,4 +1,4 @@
-# My Green Taxi
+# My Green Taxi 🚕
 
 Flutter Taxi App (for passenger and driver ) communicates with the Google Maps API Directions Service which receives direction requests and returns an efficient path. The application works on Android  iOS.
 
