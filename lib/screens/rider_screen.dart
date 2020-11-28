@@ -4,8 +4,10 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:g_taxi/global_variables.dart';
+import 'package:g_taxi/helpers/geofire_helper.dart';
 import 'package:g_taxi/helpers/helper_methods.dart';
 import 'package:g_taxi/models/direction_details.dart';
+import 'package:g_taxi/models/nearby_driver.dart';
 import 'package:g_taxi/provider/app_data.dart';
 import 'package:g_taxi/screens/search_destination_screen.dart';
 import 'package:g_taxi/style/my_colors.dart';
@@ -33,7 +35,9 @@ class _UserMapScreenState extends State<UserMapScreen> {
   bool isHasData = false;
   DirectionDetails directionDetails;
   String destinationPlace = '';
-  DatabaseReference rideRef;
+  DatabaseReference rideRequestRef;
+  DatabaseReference nearDriverRef;
+  BitmapDescriptor nearbyIcon;
 
   Completer<GoogleMapController> _completer = Completer();
   GoogleMapController mapController;
@@ -172,14 +176,16 @@ class _UserMapScreenState extends State<UserMapScreen> {
     LatLng pos = LatLng(position.latitude, position.longitude);
     cameraPosition = CameraPosition(target: pos, zoom: 14);
     mapController.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
-    await FunctionsHelper.findCordinateAddress(context, position);
+    // await FunctionsHelper.findCordinateAddress(context, position);
+    // startGeofireListener();
+    getNearbyDriver();
   }
 
   void createRideRequest() async {
-    rideRef = FirebaseDatabase.instance.reference().child('rideRequest').push();
+    rideRequestRef = FirebaseDatabase.instance.reference().child('rideRequest').push();
     var pickup = Provider.of<AppData>(context, listen: false).pickupAddress;
     var destination = Provider.of<AppData>(context, listen: false).destinationAddress;
-    await rideRef.set({
+    await rideRequestRef.set({
       'created_at': DateTime.now().toString(),
       'rider_name': currentUserInfo.name,
       'rider_phone': currentUserInfo.phone,
@@ -193,7 +199,63 @@ class _UserMapScreenState extends State<UserMapScreen> {
   }
 
   void cancelRequest() {
-    rideRef.remove();
+    rideRequestRef.remove();
+  }
+
+  void getNearbyDriver() async {
+    nearDriverRef = FirebaseDatabase.instance.reference().child('AvilableDrivers');
+    nearDriverRef.onValue.listen((event) {
+      Map map = event.snapshot.value;
+      map.forEach((key, value) {
+        double latDiff = (value['latitude'] - position.latitude).abs();
+        double lonDiff = (value['longitude'] - position.longitude).abs();
+        //  add only the drivers in range 5 km  ***(0.01 is represent abroxamtly 1 km)
+        if (latDiff < 0.05 && lonDiff < 0.05) {
+          GeofireHelper.nearbyDriverList.add(NearbyDrier(
+            key: key,
+            latitude: value['latitude'],
+            longitude: value['longitude'],
+          ));
+        }
+      });
+      print('========================');
+      print(GeofireHelper.nearbyDriverList.length);
+      updateDriversOnMap();
+    });
+  }
+
+  void updateDriversOnMap() {
+    setState(() {
+      _markers.clear();
+    });
+    Set<Marker> tempMarker = Set<Marker>();
+
+    for (NearbyDrier driver in GeofireHelper.nearbyDriverList) {
+      LatLng driverPosition = LatLng(driver.latitude, driver.longitude);
+      Marker driverMarker = Marker(
+        markerId: MarkerId('driver${driver.key}'),
+        position: driverPosition,
+        icon: nearbyIcon,
+        rotation: FunctionsHelper.generateRandomNumber(360),
+      );
+      tempMarker.add(driverMarker);
+    }
+    setState(() {
+      _markers = tempMarker;
+    });
+  }
+
+  void createNearbyMarker() {
+    if (nearbyIcon == null) {
+      ImageConfiguration imageConfiguration = createLocalImageConfiguration(
+        context,
+        size: Size(2, 2),
+      );
+      BitmapDescriptor.fromAssetImage(
+        imageConfiguration,
+        'assets/images/car_android.png',
+      ).then((value) => nearbyIcon = value);
+    }
   }
 
   @override
@@ -204,6 +266,7 @@ class _UserMapScreenState extends State<UserMapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    createNearbyMarker();
     return Scaffold(
       key: _scaffoldKey,
       drawer: BuildDrawer(),
@@ -293,7 +356,7 @@ class _UserMapScreenState extends State<UserMapScreen> {
                   ListTile(
                     leading: Icon(Icons.work_outline),
                     title: Text('Home'),
-                    subtitle: Text('6th of October city - Giza Governate'),
+                    subtitle: Text('Nasr city - Cairo'),
                   ),
                 ],
               ),

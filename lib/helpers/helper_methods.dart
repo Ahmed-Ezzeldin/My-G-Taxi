@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -165,6 +167,11 @@ class FunctionsHelper {
 
 // ==================================================================
 // ==================================================================
+
+  static double generateRandomNumber(int max) {
+    int randomInt = Random().nextInt(max);
+    return randomInt.toDouble();
+  }
 
 // ==================================================================
 // ==================================================================

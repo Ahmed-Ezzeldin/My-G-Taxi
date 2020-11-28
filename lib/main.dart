@@ -6,7 +6,7 @@ import 'package:g_taxi/screens/auth_screen.dart';
 import 'package:g_taxi/screens/driver_screen.dart';
 import 'package:g_taxi/screens/loading_screen.dart';
 import 'package:g_taxi/screens/search_destination_screen.dart';
-import 'package:g_taxi/screens/user_map_screen.dart';
+import 'package:g_taxi/screens/rider_screen.dart';
 import 'package:provider/provider.dart';
 
 void main() async {

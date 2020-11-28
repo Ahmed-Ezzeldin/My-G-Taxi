@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:g_taxi/screens/driver_screen.dart';
-import 'package:g_taxi/screens/user_map_screen.dart';
+import 'package:g_taxi/screens/rider_screen.dart';
 
 class LoadingScreen extends StatelessWidget {
   static const String routeName = 'loading_screen';

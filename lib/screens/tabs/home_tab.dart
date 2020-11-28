@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_geofire/flutter_geofire.dart';
+// import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:g_taxi/global_variables.dart';
 import 'package:g_taxi/main.dart';
 import 'package:g_taxi/style/my_colors.dart';
@@ -20,6 +20,7 @@ class _HomeTabState extends State<HomeTab> {
   Completer<GoogleMapController> _controller = Completer();
   Position currentPosition;
   bool isOnline = false;
+
   // var geolocator = Geolocator.get;
   // LocationOptions locationOptions = LocationOptions(
   //   accuracy: LocationAccuracy.bestForNavigation,
@@ -36,20 +37,40 @@ class _HomeTabState extends State<HomeTab> {
     ));
   }
 
-  void goOnlineFun() {
-    Geofire.initialize('driversAvilable');
-    Geofire.setLocation(
-      currentUser.uid,
-      currentPosition.latitude,
-      currentPosition.longitude,
-    );
+  // void goOnlineFun() {
+  //   Geofire.initialize('driversAvilable');
+  //   Geofire.setLocation(
+  //     currentUser.uid,
+  //     currentPosition.latitude,
+  //     currentPosition.longitude,
+  //   );
+  //   tripRequestRef = FirebaseDatabase.instance.reference().child('users/${currentUser.uid}/newTrip');
+  //   tripRequestRef.set('waiting');
+  //   tripRequestRef.onValue.listen((event) {});
+  // }
+
+  void mygoOnlineFun(Position position) {
+    avilableDrivers = FirebaseDatabase.instance.reference().child('AvilableDrivers/${currentUser.uid}');
+    avilableDrivers.set({
+      'latitude': position.latitude,
+      'longitude': position.longitude,
+    });
+
     tripRequestRef = FirebaseDatabase.instance.reference().child('users/${currentUser.uid}/newTrip');
     tripRequestRef.set('waiting');
     tripRequestRef.onValue.listen((event) {});
   }
 
-  void goOfflineFun() {
-    Geofire.removeLocation(currentUser.uid);
+  // void goOfflineFun() {
+  //   Geofire.removeLocation(currentUser.uid);
+  //   tripRequestRef.onDisconnect();
+  //   tripRequestRef.remove();
+  //   tripRequestRef = null;
+  // }
+  void mygoOfflineFun() {
+    avilableDrivers.onDisconnect();
+    avilableDrivers.remove();
+    avilableDrivers = null;
     tripRequestRef.onDisconnect();
     tripRequestRef.remove();
     tripRequestRef = null;
@@ -62,7 +83,8 @@ class _HomeTabState extends State<HomeTab> {
     ).listen((Position position) {
       currentPosition = position;
       if (isOnline) {
-        Geofire.setLocation(currentUser.uid, position.latitude, position.longitude);
+        // Geofire.setLocation(currentUser.uid, position.latitude, position.longitude);
+        mygoOnlineFun(currentPosition);
       }
       mapController.animateCamera(CameraUpdate.newLatLng(LatLng(position.latitude, position.longitude)));
     });
@@ -114,10 +136,10 @@ class _HomeTabState extends State<HomeTab> {
                       isOnline = !isOnline;
                     });
                     if (isOnline) {
-                      goOnlineFun();
+                      mygoOnlineFun(currentPosition);
                       getLocationUpdate();
                     } else {
-                      goOfflineFun();
+                      mygoOfflineFun();
                     }
                   }
                 },
