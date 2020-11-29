@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-// import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:g_taxi/global_variables.dart';
+import 'package:g_taxi/helpers/push_notification_service.dart';
 import 'package:g_taxi/main.dart';
 import 'package:g_taxi/style/my_colors.dart';
 import 'package:g_taxi/widgets/confirm_sheet.dart';
@@ -88,6 +88,19 @@ class _HomeTabState extends State<HomeTab> {
       }
       mapController.animateCamera(CameraUpdate.newLatLng(LatLng(position.latitude, position.longitude)));
     });
+  }
+
+  void getCurrentDriverInfo() async {
+    // currentFirebaseUser = await FirebaseAuth.instance.currentUser;
+    PushNotificationService pushNotificationService = PushNotificationService();
+    pushNotificationService.initialize();
+    pushNotificationService.getToken();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getCurrentDriverInfo();
   }
 
   @override
