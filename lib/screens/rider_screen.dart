@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
@@ -18,20 +17,19 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
-class UserMapScreen extends StatefulWidget {
+class RiderScreen extends StatefulWidget {
   static const String routeName = 'user_map_screen';
 
   @override
-  _UserMapScreenState createState() => _UserMapScreenState();
+  _RiderScreenState createState() => _RiderScreenState();
 }
 
-class _UserMapScreenState extends State<UserMapScreen> {
+class _RiderScreenState extends State<RiderScreen> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   final double bottomPadding = 280;
   double searchPanelHeight = 280;
   double detailPanelHeight = 0;
   double requestPanelHeight = 0;
-  final User user = FirebaseAuth.instance.currentUser;
   bool isHasData = false;
   DirectionDetails directionDetails;
   String destinationPlace = '';
@@ -176,21 +174,22 @@ class _UserMapScreenState extends State<UserMapScreen> {
     LatLng pos = LatLng(position.latitude, position.longitude);
     cameraPosition = CameraPosition(target: pos, zoom: 14);
     mapController.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
-    // await FunctionsHelper.findCordinateAddress(context, position);
+    await FunctionsHelper.findCordinateAddress(context, position);
     // startGeofireListener();
     getNearbyDriver();
   }
 
   void createRideRequest() async {
-    rideRequestRef = FirebaseDatabase.instance.reference().child('rideRequest').push();
+    rideRequestRef = FirebaseDatabase.instance.reference().child('RideRequests/${currentUser.uid}');
     var pickup = Provider.of<AppData>(context, listen: false).pickupAddress;
     var destination = Provider.of<AppData>(context, listen: false).destinationAddress;
     await rideRequestRef.set({
       'created_at': DateTime.now().toString(),
       'rider_name': currentUserInfo.name,
       'rider_phone': currentUserInfo.phone,
-      'pickup_address': pickup.placeName,
-      'destination_address': destination.placeName,
+      'pickup_address': pickup.formattedAddress,
+      'destination_address': destination.formattedAddress,
+      'destination_name': destination.placeName,
       'location': {'latitude': pickup.latitude, 'longitude': pickup.longitude},
       'destination': {'latitude': destination.latitude, 'longitude': destination.longitude},
       'payment_method': 'card',
@@ -324,7 +323,7 @@ class _UserMapScreenState extends State<UserMapScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Hello \"${user.email.substring(0, user.email.indexOf('@'))}\"',
+                  Text('Hello \"${currentUser.email.substring(0, currentUser.email.indexOf('@'))}\"',
                       style: TextStyle(fontSize: 12)),
                   Text(
                     'Where are you going?',
@@ -403,6 +402,11 @@ class _UserMapScreenState extends State<UserMapScreen> {
                   ]),
                   SizedBox(height: 20),
                   SignButton(title: 'Request Taxi', function: showRequestingSheet),
+                  // SignButton(
+                  //     title: 'Request Taxi',
+                  //     function: () {
+                  //       FunctionsHelper.getCurrentUser();
+                  //     }),
                 ]),
               ),
             ),

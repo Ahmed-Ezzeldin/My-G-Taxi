@@ -9,6 +9,8 @@ import 'package:g_taxi/screens/search_destination_screen.dart';
 import 'package:g_taxi/screens/rider_screen.dart';
 import 'package:provider/provider.dart';
 
+import 'global_variables.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -16,8 +18,6 @@ void main() async {
   currentUser = FirebaseAuth.instance.currentUser;
   runApp(MyApp());
 }
-
-User currentUser;
 
 class MyApp extends StatelessWidget {
   @override
@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
         routes: {
           "/": (ctx) => currentUser != null ? LoadingScreen() : AuthScreen(),
           AuthScreen.routeName: (ctx) => AuthScreen(),
-          UserMapScreen.routeName: (ctx) => UserMapScreen(),
+          RiderScreen.routeName: (ctx) => RiderScreen(),
           SearchDestinationScreen.routeName: (ctx) => SearchDestinationScreen(),
           DriverScreen.routeName: (ctx) => DriverScreen(),
           LoadingScreen.routeName: (ctx) => LoadingScreen(),

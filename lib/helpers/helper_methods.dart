@@ -16,35 +16,6 @@ import 'dart:convert';
 import 'package:provider/provider.dart';
 
 class FunctionsHelper {
-  // static void showLoadingDialog(BuildContext context, String statusMessage) {
-  //   showDialog(
-  //     context: context,
-  //     // barrierDismissible: false,
-  //     builder: (BuildContext ctx) => Dialog(
-  //       // shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-  //       shape: BeveledRectangleBorder(
-  //         borderRadius: BorderRadius.circular(12),
-  //       ),
-  //       child: Container(
-  //         padding: const EdgeInsets.all(20),
-  //         child: Row(
-  //           children: [
-  //             CircularProgressIndicator(),
-  //             SizedBox(width: 20),
-  //             Expanded(
-  //               child: Text(
-  //                 statusMessage,
-  //                 textAlign: TextAlign.center,
-  //                 style: TextStyle(fontSize: 18),
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
-
 // ==================================================================
 // ==================================================================
 
@@ -153,14 +124,11 @@ class FunctionsHelper {
 
   static void getCurrentUser() {
     User user = FirebaseAuth.instance.currentUser;
-    DatabaseReference userRef = FirebaseDatabase.instance.reference().child('riders/${user.uid}');
+    DatabaseReference userRef = FirebaseDatabase.instance.reference().child('Riders/${user.uid}');
     userRef.once().then((DataSnapshot snapshot) {
       if (snapshot.value != null) {
+        print(snapshot.value);
         currentUserInfo = UserModel.fromSnapshot(snapshot);
-        print(currentUserInfo.id);
-        print(currentUserInfo.name);
-        print(currentUserInfo.email);
-        print(currentUserInfo.phone);
       }
     });
   }

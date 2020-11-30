@@ -13,6 +13,8 @@ import 'package:g_taxi/widgets/rider_button.dart';
 import 'package:g_taxi/widgets/text_field.dart';
 import 'package:g_taxi/widgets/sign_button.dart';
 
+import '../global_variables.dart';
+
 class AuthScreen extends StatefulWidget {
   static const String routeName = 'signin_screen';
   @override
@@ -163,19 +165,17 @@ class _AuthScreenState extends State<AuthScreen> {
       } else {
         await _auth.createUserWithEmailAndPassword(
             email: emailController.text, password: passwordController.text);
-        final user = _auth.currentUser;
-        final userRef = FirebaseDatabase.instance.reference().child('users').child(user.uid);
         if (isRider) {
-          await userRef.set({
-            'id': user.uid,
+          await FirebaseDatabase.instance.reference().child('Riders').child('${currentUser.uid}').set({
+            'id': currentUser.uid,
             'name': nameController.text,
             'phoneNumber': phoneController.text,
             'email': emailController.text,
             'userType': userType,
           });
         } else {
-          await userRef.set({
-            'id': user.uid,
+          await FirebaseDatabase.instance.reference().child('Drivers').child('${currentUser.uid}').set({
+            'id': currentUser.uid,
             'name': nameController.text,
             'phoneNumber': phoneController.text,
             'email': emailController.text,
