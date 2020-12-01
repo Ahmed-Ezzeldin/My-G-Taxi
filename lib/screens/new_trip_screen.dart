@@ -68,11 +68,11 @@ class _NewTripScreenState extends State<NewTripScreen> {
       bounds = LatLngBounds(southwest: pickupLatLng, northeast: destinationLatLng);
     }
     mapController.animateCamera(CameraUpdate.newLatLngBounds(bounds, 70));
-    Marker pickupMarker = Marker(
-      markerId: MarkerId('pickup'),
-      position: pickupLatLng,
-      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-    );
+    // Marker pickupMarker = Marker(
+    //   markerId: MarkerId('pickup'),
+    //   position: pickupLatLng,
+    //   icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+    // );
     Marker destinationMarker = Marker(
       markerId: MarkerId('destination'),
       position: destinationLatLng,
@@ -96,7 +96,7 @@ class _NewTripScreenState extends State<NewTripScreen> {
       fillColor: Colors.purple,
     );
     setState(() {
-      _markers.add(pickupMarker);
+      // _markers.add(pickupMarker);
       _markers.add(destinationMarker);
       _circles.add(pickupCircle);
       _circles.add(destinationCircle);
@@ -205,8 +205,6 @@ class _NewTripScreenState extends State<NewTripScreen> {
                       )),
                     ],
                   ),
-                  Text('=> ${currentPosition.latitude} ,, => ${currentPosition.longitude}'),
-                  Text('=> ${tripDetails.destination.latitude} ,, => ${tripDetails.destination.longitude}'),
                   SignButton(title: 'Arrived', function: () {})
                 ],
               ),
