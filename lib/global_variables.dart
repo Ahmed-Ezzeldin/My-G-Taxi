@@ -3,6 +3,7 @@
 //
 import 'dart:async';
 
+import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:g_taxi/models/user_model.dart';
@@ -21,3 +22,5 @@ CameraPosition cameraPosition = CameraPosition(target: LatLng(30.0444, 31.2357),
 DatabaseReference tripRequestRef;
 DatabaseReference avilableDrivers;
 StreamSubscription<Position> homeTabPositionStream;
+final AssetsAudioPlayer audioPlayer = AssetsAudioPlayer();
+Position currentPosition;

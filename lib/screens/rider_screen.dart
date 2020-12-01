@@ -188,6 +188,7 @@ class _RiderScreenState extends State<RiderScreen> {
       'rider_name': currentUserInfo.name,
       'rider_phone': currentUserInfo.phone,
       'pickup_address': pickup.formattedAddress,
+      'pickup_name': pickup.placeName,
       'destination_address': destination.formattedAddress,
       'destination_name': destination.placeName,
       'location': {'latitude': pickup.latitude, 'longitude': pickup.longitude},

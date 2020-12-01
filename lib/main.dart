@@ -5,6 +5,7 @@ import 'package:g_taxi/provider/app_data.dart';
 import 'package:g_taxi/screens/auth_screen.dart';
 import 'package:g_taxi/screens/driver_screen.dart';
 import 'package:g_taxi/screens/loading_screen.dart';
+import 'package:g_taxi/screens/new_trip_screen.dart';
 import 'package:g_taxi/screens/search_destination_screen.dart';
 import 'package:g_taxi/screens/rider_screen.dart';
 import 'package:provider/provider.dart';
@@ -47,6 +48,7 @@ class MyApp extends StatelessWidget {
           SearchDestinationScreen.routeName: (ctx) => SearchDestinationScreen(),
           DriverScreen.routeName: (ctx) => DriverScreen(),
           LoadingScreen.routeName: (ctx) => LoadingScreen(),
+          NewTripScreen.routeName: (ctx) => NewTripScreen(),
         },
       ),
     );

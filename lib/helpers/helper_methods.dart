@@ -81,6 +81,7 @@ class FunctionsHelper {
       Address pickupAddress = Address(
         latitude: position.latitude,
         longitude: position.longitude,
+        placeName: response['results'][0]['address_components'][1]['short_name'],
         formattedAddress: address,
       );
       formattedLocation = pickupAddress.formattedAddress;

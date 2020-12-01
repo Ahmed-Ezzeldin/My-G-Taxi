@@ -16,7 +16,6 @@ class HomeTab extends StatefulWidget {
 class _HomeTabState extends State<HomeTab> {
   GoogleMapController mapController;
   Completer<GoogleMapController> _controller = Completer();
-  Position currentPosition;
   bool isOnline = false;
 
   void getCurrentPosition() async {
@@ -66,7 +65,7 @@ class _HomeTabState extends State<HomeTab> {
   void getCurrentDriverInfo() async {
     // currentFirebaseUser = await FirebaseAuth.instance.currentUser;
     PushNotificationService pushNotificationService = PushNotificationService();
-    pushNotificationService.initialize();
+    pushNotificationService.initialize(context);
     pushNotificationService.getToken();
   }
 
