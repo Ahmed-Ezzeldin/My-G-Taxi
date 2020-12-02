@@ -355,7 +355,7 @@ class _RiderScreenState extends State<RiderScreen> {
                   ),
                   ListTile(
                     leading: Icon(Icons.work_outline),
-                    title: Text('Home'),
+                    title: Text('Work'),
                     subtitle: Text('Nasr city - Cairo'),
                   ),
                 ],

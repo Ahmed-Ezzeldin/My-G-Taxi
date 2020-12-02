@@ -6,6 +6,7 @@ import 'package:g_taxi/global_variables.dart';
 import 'package:g_taxi/helpers/map_kit_helper.dart';
 import 'package:g_taxi/models/trip_details.dart';
 import 'package:g_taxi/style/my_colors.dart';
+import 'package:g_taxi/widgets/collect_payment.dart';
 import 'package:g_taxi/widgets/sign_button.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -234,6 +235,31 @@ class _NewTripScreenState extends State<NewTripScreen> {
     rideRef.child('cost').set(cost);
     rideRef.child('status').set('ended');
     ridePositionStream.cancel();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => CollectPaymentDialog(
+        tripDetails.paymentMethod,
+        cost,
+      ),
+    );
+    topUpEarnings(cost);
+  }
+
+  void topUpEarnings(int cost) {
+    DatabaseReference earningsRef =
+        FirebaseDatabase().reference().child('Drivers/${currentUser.uid}/earnings');
+    earningsRef.once().then((DataSnapshot snapshot) {
+      if (snapshot.value != null) {
+        double oldEarnings = snapshot.value;
+        double adjustCost = cost + oldEarnings;
+        earningsRef.set(adjustCost);
+      } else {
+        double adjustedEarnings = cost * 0.85;
+        earningsRef.set(adjustedEarnings);
+      }
+    });
   }
 
   @override

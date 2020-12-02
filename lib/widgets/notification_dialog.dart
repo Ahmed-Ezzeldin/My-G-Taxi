@@ -89,7 +89,6 @@ class NotificationDialog extends StatelessWidget {
               ),
             ),
             SizedBox(height: 30),
-            Text(tripDetails.rideId),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
