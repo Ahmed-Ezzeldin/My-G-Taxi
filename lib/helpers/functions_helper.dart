@@ -148,8 +148,8 @@ class FunctionsHelper {
 // ==================================================================
 
   static void disableHomeTabLocationUpdate() {
-    homeTabPositionStream.pause();
-    avilableDrivers.remove();
+    // homeTabPositionStream.pause();
+    // avilableDrivers.remove();
   }
 
   static void enableHomeTabLocationUpdate() {

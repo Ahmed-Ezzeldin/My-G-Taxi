@@ -3,6 +3,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:g_taxi/global_variables.dart';
+import 'package:g_taxi/helpers/map_kit_helper.dart';
 import 'package:g_taxi/models/trip_details.dart';
 import 'package:g_taxi/style/my_colors.dart';
 import 'package:g_taxi/widgets/sign_button.dart';
@@ -30,6 +31,12 @@ class _NewTripScreenState extends State<NewTripScreen> {
   BitmapDescriptor riderIcon;
   BitmapDescriptor movingMarkerIcon;
   Position myPosition;
+  String status = 'accepted';
+  String durationString = '';
+  bool isRequestingDirection = false;
+  String buttonTitle = 'Arrived';
+  Timer timer;
+  int durationCounter = 0;
 
   Future<void> getDirection(LatLng pickupLatLng, LatLng destinationLatLng) async {
     var destinationDetails = await FunctionsHelper.getDirectionDetails(pickupLatLng, destinationLatLng);
@@ -150,15 +157,24 @@ class _NewTripScreenState extends State<NewTripScreen> {
   }
 
   void getLocationUpdate() {
+    LatLng oldPosition = LatLng(0, 0);
     ridePositionStream = Geolocator.getPositionStream().listen((position) {
       myPosition = position;
       currentPosition = position;
       LatLng positionLatLng = LatLng(myPosition.latitude, myPosition.longitude);
+      var rotation = MapKitHelper.getMarkerRotation(
+        oldPosition.latitude,
+        oldPosition.longitude,
+        positionLatLng.latitude,
+        positionLatLng.longitude,
+      );
+
       Marker movingMarker = Marker(
         markerId: MarkerId('moving'),
         position: positionLatLng,
         icon: movingMarkerIcon,
         infoWindow: InfoWindow(title: 'Current Location'),
+        rotation: rotation,
       );
       setState(() {
         CameraPosition cp = CameraPosition(target: positionLatLng, zoom: 17);
@@ -166,7 +182,58 @@ class _NewTripScreenState extends State<NewTripScreen> {
         _markers.removeWhere((marker) => marker.markerId.value == 'moving');
         _markers.add(movingMarker);
       });
+      oldPosition = positionLatLng;
+      updateTripDetails();
+
+      rideRef.child('driver_location').set({
+        'latitude': myPosition.latitude,
+        'longitude': myPosition.longitude,
+      });
     });
+  }
+
+  void updateTripDetails() async {
+    if (!isRequestingDirection) {
+      isRequestingDirection = true;
+      if (myPosition == null) {
+        return;
+      }
+      LatLng positionLatLng = LatLng(myPosition.latitude, myPosition.longitude);
+      LatLng destinationLatLng;
+      if (status == 'accepted') {
+        destinationLatLng = tripDetails.pickup;
+      } else {
+        destinationLatLng = tripDetails.destination;
+      }
+      var directionDetails = await FunctionsHelper.getDirectionDetails(positionLatLng, destinationLatLng);
+      if (directionDetails != null) {
+        setState(() {
+          durationString = directionDetails.durationText;
+        });
+      }
+      isRequestingDirection = false;
+    }
+  }
+
+  void startTimer() {
+    const interval = Duration(seconds: 1);
+    timer = Timer.periodic(interval, (timer) {
+      durationCounter++;
+    });
+  }
+
+  void endTrip() async {
+    timer.cancel();
+    var currentLatlng = LatLng(myPosition.latitude, myPosition.longitude);
+    var directionDetails = await FunctionsHelper.getDirectionDetails(tripDetails.pickup, currentLatlng);
+
+    Navigator.of(context).pop();
+
+    int cost = FunctionsHelper.calculateTripCost(directionDetails);
+
+    rideRef.child('cost').set(cost);
+    rideRef.child('status').set('ended');
+    ridePositionStream.cancel();
   }
 
   @override
@@ -227,7 +294,7 @@ class _NewTripScreenState extends State<NewTripScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '4 Mins',
+                      durationString,
                       style: TextStyle(
                         fontSize: 14,
                         fontFamily: 'Brand-Bold',
@@ -277,7 +344,28 @@ class _NewTripScreenState extends State<NewTripScreen> {
                         )),
                       ],
                     ),
-                    SignButton(title: 'Arrived', function: () {})
+                    SignButton(
+                      title: buttonTitle,
+                      function: () async {
+                        if (status == 'accepted') {
+                          status = 'arrived';
+                          rideRef.child('status').set('arrived');
+                          setState(() {
+                            buttonTitle = 'Start Trip';
+                          });
+                          await getDirection(tripDetails.pickup, tripDetails.destination);
+                        } else if (status == 'arrived') {
+                          status = 'ontrip';
+                          rideRef.child('status').set('ontrip');
+                          setState(() {
+                            buttonTitle = 'End Trip';
+                          });
+                          startTimer();
+                        } else if (status == 'ontrip') {
+                          endTrip();
+                        }
+                      },
+                    )
                   ],
                 ),
               ),
