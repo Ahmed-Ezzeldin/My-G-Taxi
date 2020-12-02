@@ -24,6 +24,11 @@ Flutter Taxi App (for passenger and driver ) communicates with the Google Maps A
 <img src="screenshots/10.png" width="250" height="500">
 <img src="screenshots/11.png" width="250" height="500">
 <img src="screenshots/13.png" width="250" height="500">
-<img src="screenshots/14.jpg" width="250" height="500">
-<img src="screenshots/15.jpg" width="250" height="500">
+<img src="screenshots/14.png" width="250" height="500">
+<img src="screenshots/15.png" width="250" height="500">
+<img src="screenshots/16.png" width="250" height="500">
+<img src="screenshots/17.png" width="250" height="500">
+<img src="screenshots/18.png" width="250" height="500">
+<img src="screenshots/19.png" width="250" height="500">
+
 <div>
