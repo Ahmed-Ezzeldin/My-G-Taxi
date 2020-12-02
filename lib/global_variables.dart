@@ -29,3 +29,4 @@ Position currentPosition;
 
 DatabaseReference rideRef;
 Driver currentDriverInfo;
+StreamSubscription<Position> ridePositionStream;

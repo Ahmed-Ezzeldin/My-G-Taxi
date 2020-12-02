@@ -22,7 +22,6 @@ class _HomeTabState extends State<HomeTab> {
   void getCurrentPosition() async {
     currentPosition =
         await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.bestForNavigation);
-
     LatLng positionLatLng = LatLng(currentPosition.latitude, currentPosition.longitude);
     mapController.animateCamera(CameraUpdate.newCameraPosition(
       CameraPosition(target: positionLatLng, zoom: 14),

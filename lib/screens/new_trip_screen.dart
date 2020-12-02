@@ -6,8 +6,9 @@ import 'package:g_taxi/global_variables.dart';
 import 'package:g_taxi/models/trip_details.dart';
 import 'package:g_taxi/style/my_colors.dart';
 import 'package:g_taxi/widgets/sign_button.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:g_taxi/helpers/helper_methods.dart';
+import 'package:g_taxi/helpers/functions_helper.dart';
 
 class NewTripScreen extends StatefulWidget {
   static const String routeName = 'new_trip_screen';
@@ -27,6 +28,8 @@ class _NewTripScreenState extends State<NewTripScreen> {
   PolylinePoints polylinePoints = PolylinePoints();
   TripDetails tripDetails;
   BitmapDescriptor riderIcon;
+  BitmapDescriptor movingMarkerIcon;
+  Position myPosition;
 
   Future<void> getDirection(LatLng pickupLatLng, LatLng destinationLatLng) async {
     var destinationDetails = await FunctionsHelper.getDirectionDetails(pickupLatLng, destinationLatLng);
@@ -133,17 +136,52 @@ class _NewTripScreenState extends State<NewTripScreen> {
     }
   }
 
+  void createmovingMarker() async {
+    if (movingMarkerIcon == null) {
+      ImageConfiguration imageConfiguration = createLocalImageConfiguration(
+        context,
+        size: Size(2, 2),
+      );
+      movingMarkerIcon = await BitmapDescriptor.fromAssetImage(
+        imageConfiguration,
+        'assets/images/car_android.png',
+      );
+    }
+  }
+
+  void getLocationUpdate() {
+    ridePositionStream = Geolocator.getPositionStream().listen((position) {
+      myPosition = position;
+      currentPosition = position;
+      LatLng positionLatLng = LatLng(myPosition.latitude, myPosition.longitude);
+      Marker movingMarker = Marker(
+        markerId: MarkerId('moving'),
+        position: positionLatLng,
+        icon: movingMarkerIcon,
+        infoWindow: InfoWindow(title: 'Current Location'),
+      );
+      setState(() {
+        CameraPosition cp = CameraPosition(target: positionLatLng, zoom: 17);
+        mapController.animateCamera(CameraUpdate.newCameraPosition(cp));
+        _markers.removeWhere((marker) => marker.markerId.value == 'moving');
+        _markers.add(movingMarker);
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     tripDetails = ModalRoute.of(context).settings.arguments;
     acceptTrip();
     createRiderMarker();
+    createmovingMarker();
     return Scaffold(
       // appBar: AppBar(title: Text('New Trip')),
       body: SafeArea(
         child: Stack(
           children: [
             GoogleMap(
+              padding: const EdgeInsets.only(bottom: 280),
               initialCameraPosition: cameraPosition,
               myLocationEnabled: true,
               myLocationButtonEnabled: true,
@@ -159,6 +197,7 @@ class _NewTripScreenState extends State<NewTripScreen> {
                 LatLng currentLatLng = LatLng(currentPosition.latitude, currentPosition.longitude);
                 LatLng pickupLatLng = tripDetails.pickup;
                 await getDirection(currentLatLng, pickupLatLng);
+                getLocationUpdate();
               },
             ),
             Positioned(

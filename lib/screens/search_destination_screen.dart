@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:g_taxi/global_variables.dart';
-import 'package:g_taxi/helpers/helper_methods.dart';
+import 'package:g_taxi/helpers/functions_helper.dart';
 import 'package:g_taxi/models/prediction.dart';
 import 'package:g_taxi/style/my_colors.dart';
 import 'package:g_taxi/widgets/prediction_list_tile.dart';

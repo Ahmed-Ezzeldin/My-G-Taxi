@@ -1,6 +1,7 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:g_taxi/global_variables.dart';
+import 'package:g_taxi/helpers/functions_helper.dart';
 import 'package:g_taxi/models/trip_details.dart';
 import 'package:g_taxi/screens/new_trip_screen.dart';
 // import 'package:firebase_database/firebase_database.dart';
@@ -21,6 +22,7 @@ class NotificationDialog extends StatelessWidget {
       }
       if (thisRideId == tripDetails.rideId) {
         await rideRef.set('accepted');
+        FunctionsHelper.disableHomeTabLocationUpdate();
         Navigator.of(context).pop();
         // Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => NewTripScreen(tripDetails)));
         Navigator.of(context).pushNamed(NewTripScreen.routeName, arguments: tripDetails);

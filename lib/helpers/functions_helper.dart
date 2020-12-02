@@ -144,5 +144,20 @@ class FunctionsHelper {
 
 // ==================================================================
 // ==================================================================
+// ==================================================================
+// ==================================================================
 
+  static void disableHomeTabLocationUpdate() {
+    homeTabPositionStream.pause();
+    avilableDrivers.remove();
+  }
+
+  static void enableHomeTabLocationUpdate() {
+    homeTabPositionStream.resume();
+    avilableDrivers = FirebaseDatabase.instance.reference().child('AvilableDrivers/${currentUser.uid}');
+    avilableDrivers.set({
+      'latitude': currentPosition.latitude,
+      'longitude': currentPosition.longitude,
+    });
+  }
 }

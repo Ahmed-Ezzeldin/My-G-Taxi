@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:g_taxi/global_variables.dart';
 import 'package:g_taxi/helpers/geofire_helper.dart';
-import 'package:g_taxi/helpers/helper_methods.dart';
+import 'package:g_taxi/helpers/functions_helper.dart';
 import 'package:g_taxi/models/direction_details.dart';
 import 'package:g_taxi/models/nearby_driver.dart';
 import 'package:g_taxi/provider/app_data.dart';
