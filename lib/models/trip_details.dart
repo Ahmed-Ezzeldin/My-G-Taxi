@@ -6,7 +6,7 @@ class TripDetails {
   String pickupAddress;
   LatLng destination;
   LatLng pickup;
-  String riderId;
+  String rideId;
   String riderName;
   String riderPhone;
   String paymentMethod;
@@ -17,7 +17,7 @@ class TripDetails {
     this.pickupAddress,
     this.destination,
     this.pickup,
-    this.riderId,
+    this.rideId,
     this.riderName,
     this.riderPhone,
     this.paymentMethod,

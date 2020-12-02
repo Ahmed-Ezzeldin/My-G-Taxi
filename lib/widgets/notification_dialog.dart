@@ -19,7 +19,7 @@ class NotificationDialog extends StatelessWidget {
       } else {
         print('ride not found');
       }
-      if (thisRideId == tripDetails.riderId) {
+      if (thisRideId == tripDetails.rideId) {
         await rideRef.set('accepted');
         Navigator.of(context).pop();
         // Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => NewTripScreen(tripDetails)));
@@ -87,6 +87,7 @@ class NotificationDialog extends StatelessWidget {
               ),
             ),
             SizedBox(height: 30),
+            Text(tripDetails.rideId),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [

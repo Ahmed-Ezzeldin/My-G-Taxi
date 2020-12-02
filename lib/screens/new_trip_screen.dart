@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:g_taxi/global_variables.dart';
@@ -24,6 +25,8 @@ class _NewTripScreenState extends State<NewTripScreen> {
 
   List<LatLng> polylineCoordinates = [];
   PolylinePoints polylinePoints = PolylinePoints();
+  TripDetails tripDetails;
+  BitmapDescriptor riderIcon;
 
   Future<void> getDirection(LatLng pickupLatLng, LatLng destinationLatLng) async {
     var destinationDetails = await FunctionsHelper.getDirectionDetails(pickupLatLng, destinationLatLng);
@@ -76,7 +79,8 @@ class _NewTripScreenState extends State<NewTripScreen> {
     Marker destinationMarker = Marker(
       markerId: MarkerId('destination'),
       position: destinationLatLng,
-      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+      // icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+      icon: riderIcon,
     );
 
     Circle pickupCircle = Circle(
@@ -103,114 +107,144 @@ class _NewTripScreenState extends State<NewTripScreen> {
     });
   }
 
+  void acceptTrip() {
+    rideRef = FirebaseDatabase.instance.reference().child('RideRequests/${tripDetails.rideId}');
+    rideRef.child('status').set('Accepted');
+    rideRef.child('driver_id').set(currentDriverInfo.id);
+    rideRef.child('driver_name').set(currentDriverInfo.name);
+    rideRef.child('driver_phone').set(currentDriverInfo.phone);
+    rideRef.child('car_details').set('${currentDriverInfo.carModel} - ${currentDriverInfo.carColor}');
+    rideRef.child('driver_location').set({
+      'latitude': currentPosition.latitude,
+      'longitude': currentPosition.longitude,
+    });
+  }
+
+  void createRiderMarker() async {
+    if (riderIcon == null) {
+      ImageConfiguration imageConfiguration = createLocalImageConfiguration(
+        context,
+        size: Size(2, 2),
+      );
+      riderIcon = await BitmapDescriptor.fromAssetImage(
+        imageConfiguration,
+        'assets/images/rider_marker.png',
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    TripDetails tripDetails = ModalRoute.of(context).settings.arguments;
+    tripDetails = ModalRoute.of(context).settings.arguments;
+    acceptTrip();
+    createRiderMarker();
     return Scaffold(
       // appBar: AppBar(title: Text('New Trip')),
-      body: Stack(
-        children: [
-          GoogleMap(
-            initialCameraPosition: cameraPosition,
-            myLocationEnabled: true,
-            myLocationButtonEnabled: true,
-            compassEnabled: true,
-            trafficEnabled: true,
-            mapType: MapType.normal,
-            markers: _markers,
-            circles: _circles,
-            polylines: _polylines,
-            onMapCreated: (GoogleMapController controller) async {
-              mapController = controller;
-              _completer.complete(controller);
-              LatLng currentLatLng = LatLng(currentPosition.latitude, currentPosition.longitude);
-              LatLng pickupLatLng = tripDetails.destination;
-              await getDirection(currentLatLng, pickupLatLng);
-            },
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              height: 280,
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(15),
-                  topRight: Radius.circular(15),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            GoogleMap(
+              initialCameraPosition: cameraPosition,
+              myLocationEnabled: true,
+              myLocationButtonEnabled: true,
+              compassEnabled: true,
+              trafficEnabled: true,
+              mapType: MapType.normal,
+              markers: _markers,
+              circles: _circles,
+              polylines: _polylines,
+              onMapCreated: (GoogleMapController controller) async {
+                mapController = controller;
+                _completer.complete(controller);
+                LatLng currentLatLng = LatLng(currentPosition.latitude, currentPosition.longitude);
+                LatLng pickupLatLng = tripDetails.pickup;
+                await getDirection(currentLatLng, pickupLatLng);
+              },
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                height: 280,
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(15),
+                    topRight: Radius.circular(15),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 15,
+                      spreadRadius: 0.5,
+                      offset: Offset(0.7, 0.7),
+                    )
+                  ],
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 15,
-                    spreadRadius: 0.5,
-                    offset: Offset(0.7, 0.7),
-                  )
-                ],
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '14 Mins',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontFamily: 'Brand-Bold',
-                      color: MyColors.accentPurple,
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '${tripDetails.riderName}',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontFamily: 'Brand-Bold',
-                        ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '4 Mins',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontFamily: 'Brand-Bold',
+                        color: MyColors.accentPurple,
                       ),
-                      Icon(Icons.call),
-                    ],
-                  ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Image.asset('assets/images/pickicon.png', height: 20, width: 20),
-                      SizedBox(width: 15),
-                      Expanded(
-                          child: Container(
-                        child: Text(
-                          '${tripDetails.pickupAddress}',
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 16),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${tripDetails.riderName}',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontFamily: 'Brand-Bold',
+                          ),
                         ),
-                      )),
-                    ],
-                  ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Image.asset('assets/images/desticon.png', height: 20, width: 20),
-                      SizedBox(width: 15),
-                      Expanded(
-                          child: Container(
-                        child: Text(
-                          '${tripDetails.destinationName}',
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      )),
-                    ],
-                  ),
-                  SignButton(title: 'Arrived', function: () {})
-                ],
+                        Icon(Icons.call),
+                      ],
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Image.asset('assets/images/pickicon.png', height: 20, width: 20),
+                        SizedBox(width: 15),
+                        Expanded(
+                            child: Container(
+                          child: Text(
+                            '${tripDetails.pickupAddress}',
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        )),
+                      ],
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Image.asset('assets/images/desticon.png', height: 20, width: 20),
+                        SizedBox(width: 15),
+                        Expanded(
+                            child: Container(
+                          child: Text(
+                            '${tripDetails.destinationName}',
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        )),
+                      ],
+                    ),
+                    SignButton(title: 'Arrived', function: () {})
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

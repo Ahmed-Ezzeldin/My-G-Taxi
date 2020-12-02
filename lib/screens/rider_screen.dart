@@ -180,21 +180,21 @@ class _RiderScreenState extends State<RiderScreen> {
   }
 
   void createRideRequest() async {
-    rideRequestRef = FirebaseDatabase.instance.reference().child('RideRequests/${currentUser.uid}');
+    rideRequestRef = FirebaseDatabase.instance.reference().child('RideRequests').push();
     var pickup = Provider.of<AppData>(context, listen: false).pickupAddress;
     var destination = Provider.of<AppData>(context, listen: false).destinationAddress;
     await rideRequestRef.set({
       'created_at': DateTime.now().toString(),
+      'rider_id': currentUserInfo.id,
       'rider_name': currentUserInfo.name,
       'rider_phone': currentUserInfo.phone,
+      'payment_method': 'card',
       'pickup_address': pickup.formattedAddress,
       'pickup_name': pickup.placeName,
       'destination_address': destination.formattedAddress,
       'destination_name': destination.placeName,
       'location': {'latitude': pickup.latitude, 'longitude': pickup.longitude},
       'destination': {'latitude': destination.latitude, 'longitude': destination.longitude},
-      'payment_method': 'card',
-      'driver_id': 'waiting',
     });
   }
 

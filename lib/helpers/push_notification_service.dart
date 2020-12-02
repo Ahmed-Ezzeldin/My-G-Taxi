@@ -31,8 +31,8 @@ class PushNotificationService {
     return rideId;
   }
 
-  void fetchRideInfo(String riderId, BuildContext context) {
-    DatabaseReference rideRef = FirebaseDatabase.instance.reference().child('RideRequests/$riderId');
+  void fetchRideInfo(String rideId, BuildContext context) {
+    DatabaseReference rideRef = FirebaseDatabase.instance.reference().child('RideRequests/$rideId');
     rideRef.once().then((DataSnapshot snapshot) {
       if (snapshot.value != null) {
         audioPlayer.open(Audio('assets/sounds/alert.mp3'));
@@ -48,7 +48,7 @@ class PushNotificationService {
         String riderPhone = snapshot.value['rider_phone'];
 
         TripDetails tripDetails = TripDetails(
-          riderId: riderId,
+          rideId: rideId,
           riderName: riderName,
           riderPhone: riderPhone,
           pickupAddress: pickupAddress,

@@ -69,6 +69,7 @@ flutter:
     - assets/images/pickicon.png
     - assets/images/posimarker.png
     - assets/images/redmarker.png
+    - assets/images/rider_marker.png
     - assets/images/taxi.png
     - assets/images/taxi.gif
     - assets/images/user_icon.png

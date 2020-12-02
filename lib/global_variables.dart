@@ -10,6 +10,8 @@ import 'package:g_taxi/models/user_model.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+import 'models/driver.dart';
+
 final String mapAPIKey = 'AIzaSyC-TWIeQllYDT8l11GObNtg7r7bndZ-zEc';
 
 User currentUser;
@@ -24,3 +26,6 @@ DatabaseReference avilableDrivers;
 StreamSubscription<Position> homeTabPositionStream;
 final AssetsAudioPlayer audioPlayer = AssetsAudioPlayer();
 Position currentPosition;
+
+DatabaseReference rideRef;
+Driver currentDriverInfo;
