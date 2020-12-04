@@ -163,35 +163,39 @@ class _AuthScreenState extends State<AuthScreen> {
             email: emailController.text, password: passwordController.text);
         Navigator.of(context).pushReplacementNamed(LoadingScreen.routeName);
       } else {
-        await _auth.createUserWithEmailAndPassword(
+        UserCredential signupUser = await _auth.createUserWithEmailAndPassword(
             email: emailController.text, password: passwordController.text);
         if (isRider) {
-          await FirebaseDatabase.instance.reference().child('Riders').child('${currentUser.uid}').set({
+          await FirebaseDatabase.instance.reference().child('Riders').child('${signupUser.user.uid}').set({
             'id': currentUser.uid,
             'name': nameController.text,
-            'phoneNumber': phoneController.text,
+            'phoneNumber': int.parse(phoneController.text),
             'email': emailController.text,
             'userType': userType,
+          }).then((_) {
+            Navigator.of(context).pushReplacementNamed(LoadingScreen.routeName);
           });
         } else {
-          await FirebaseDatabase.instance.reference().child('Drivers').child('${currentUser.uid}').set({
+          await FirebaseDatabase.instance.reference().child('Drivers').child('${signupUser.user.uid}').set({
             'id': currentUser.uid,
             'name': nameController.text,
-            'phoneNumber': phoneController.text,
+            'phoneNumber': int.parse(phoneController.text),
             'email': emailController.text,
             'userType': userType,
             'carBrand': carBrandController.text,
             'carModel': carModelController.text,
             'carNumber': carNumberController.text,
             'carColor': carColorController.text,
+          }).then((_) {
+            Navigator.of(context).pushReplacementNamed(LoadingScreen.routeName);
           });
         }
-        Navigator.of(context).pushReplacementNamed(LoadingScreen.routeName);
+        // Navigator.of(context).pushReplacementNamed(LoadingScreen.routeName);
       }
     } catch (error) {
       isLoading = false;
       setState(() {});
-      FunctionsHelper.showMessageAlert(context, error.message);
+      FunctionsHelper.showMessageAlert(context, error.toString());
     }
   }
 
